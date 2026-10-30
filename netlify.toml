@@ -1,0 +1,34 @@
+# Ehliyet Sınav Kampı - Netlify ayarları
+# Derleme yok; klasördeki dosyalar olduğu gibi yayınlanır.
+[build]
+  publish = "."
+
+# Bilinmeyen adreslerde ana sayfayı aç
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Sayfa her açılışta güncel gelsin (soru eklenince telefonda eski sürüm kalmasın)
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/icon-*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Uygulama güncellenince telefon yeni sürümü hemen alsın
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
