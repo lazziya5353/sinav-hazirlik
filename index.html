@@ -65,6 +65,15 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline
 .seg3 .lv-orta.on{background:#d9601f}
 .seg3 .lv-zor.on{background:#152033}
 .test.lv-orta .sign{background:#d9601f;box-shadow:0 0 0 2px #d9601f}
+.ders-sec{display:flex;flex-direction:column;gap:10px}
+.ders-sec h2{font-size:1.5rem}
+.dgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.dbtn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);text-align:left;min-height:96px;border-top:4px solid var(--sign)}
+.dbtn b{font-family:var(--display);font-size:1.2rem;line-height:1.1}
+.dbtn small{font-size:.75rem;color:var(--muted)}
+.dbtn .dic{font-size:1.3rem;line-height:1;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;background:var(--bg)}
+.dbtn.d-T{border-top-color:#1d4f9c} .dbtn.d-I{border-top-color:#c8322b} .dbtn.d-M{border-top-color:#d9601f} .dbtn.d-A{border-top-color:#1d8a4e}
+.dbtn:hover{border-color:var(--sign)}
 .kurs-sec{display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
 .khead{display:flex;align-items:center;gap:10px}
 .khead h2{font-size:1.6rem}
@@ -1048,6 +1057,11 @@ const POOL = {0:q=>q[1]<=4, 5:q=>q[1]===5, 6:q=>q[1]===6, 7:q=>q[1]<=6};
 const KURSSETS = [11,12,13,14,15,16,17,18].map((id,i)=>({id, kod:["1","2","3","4","5–6","7","8","9"][i], ad:"Kurs Denemesi "+["1","2","3","4","5–6","7","8","9"][i], kurs:true}));
 const DERS = {21:"I",22:"T",23:"M",24:"A"};
 const DERSSETS = Object.entries(DERS).map(([id,k])=>({id:+id, ad:"Kurs · "+KAT[k], kurs:true}));
+const GENEL = {31:"T",32:"I",33:"M",34:"A"};
+const GENELSETS = Object.entries(GENEL).map(([id,k])=>({id:+id, ad:KAT[k]+" Soruları", genel:true}));
+const DERSICON = {T:"🚦",I:"✚",M:"⚙",A:"🤝"};
+const tumDers = k => { const seen=new Set(); return Q.filter(q=>q[0]===k).filter(q=>{ if(seen.has(q[2])) return false; seen.add(q[2]); return true; }); };
+const dersAdet = () => { const v=store.get("dersAdet"); return v==="hepsi"||v===20||v===50 ? v : 50; };
 const kursDers = k => { const seen=new Set(); return Q.filter(q=>q[1]>=11&&q[1]<=18&&q[0]===k).filter(q=>{ if(seen.has(q[2])) return false; seen.add(q[2]); return true; }); };
 const SETS = [
   {id:4, kod:"2026", ad:"2026 Yeni Dönem", alt:"50 soru · 2026 yeni trafik cezaları ve güncel kurallar", yeni:true},
@@ -1194,7 +1208,7 @@ const name = () => (store.get("ad")||"").trim();
 const timed = () => store.get("sureli") !== false;
 const level = () => ["kolay","orta","zor"].includes(store.get("zorluk")) ? store.get("zorluk") : "kolay";
 const setsFor = lv => LVSETS[lv] || SETS;
-const ALLSETS = () => SETS.concat(LVSETS.orta, LVSETS.zor, KURSSETS, DERSSETS).filter((s,i,a)=>a.findIndex(x=>x.id===s.id)===i);
+const ALLSETS = () => SETS.concat(LVSETS.orta, LVSETS.zor, KURSSETS, DERSSETS, GENELSETS).filter((s,i,a)=>a.findIndex(x=>x.id===s.id)===i);
 const fmt = s => `${String(Math.floor(Math.max(0,s)/60)).padStart(2,"0")}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
 const setMode = q => app.classList.toggle("quizmode", q);
 const bottom = html => { let b=document.getElementById("bb"); if(!html){ if(b) b.remove(); return } if(!b){ b=document.createElement("div"); b.id="bb"; b.className="bottombar"; document.body.appendChild(b) } b.innerHTML=`<div class="in">${html}</div>`; return b };
@@ -1219,6 +1233,12 @@ function home(){
     <button id="m1" class="${timed()?"on":""}" aria-pressed="${timed()}">Süreli<small>45 dakika, gerçek sınav gibi</small></button>
     <button id="m0" class="${timed()?"":"on"}" aria-pressed="${!timed()}">Süresiz<small>Acele etmeden çalış</small></button>
   </div>
+  <section class="ders-sec" aria-labelledby="dh">
+    <h2 id="dh">Derslere Göre Çalış</h2>
+    <p class="note">Kaç soru istediğini seç, sonra bir derse dokun. Sorular o dersin bütün sorularından karışık gelir.</p>
+    <div class="seg seg3" role="group" aria-label="Soru sayısı">${[[20,"20 soru"],[50,"50 soru"],["hepsi","Hepsi"]].map(([v,l])=>`<button class="adb${dersAdet()===v?" on":""}" data-adet="${v}" aria-pressed="${dersAdet()===v}">${l}</button>`).join("")}</div>
+    <div class="dgrid">${GENELSETS.map(s=>{const k=GENEL[s.id],n=tumDers(k).length;return `<button class="dbtn d-${k}" data-set="${s.id}"><span class="dic" aria-hidden="true">${DERSICON[k]}</span><b>${KAT[k]}</b><small>${dersAdet()==="hepsi"?`${n} sorunun hepsi`:`${n} soruluk havuz`}${best[s.id]!=null?` · en iyi ${best[s.id]}`:""}</small></button>`}).join("")}</div>
+  </section>
   <div class="label">Zorluk</div>
   <div class="seg seg3" role="group" aria-label="Zorluk seçimi">
     ${[["kolay","Kolay","Temel kurallar"],["orta","Orta","Rakam ve ayrıntı"],["zor","Zor","Yönetmelik, I-II-III"]].map(([k,a,b])=>`<button class="lvb lv-${k}${level()===k?" on":""}" data-lv="${k}" aria-pressed="${level()===k}">${a}<small>${b}</small></button>`).join("")}
@@ -1266,7 +1286,8 @@ function home(){
   document.getElementById("m1").onclick=()=>{store.set("sureli",true);home()};
   document.getElementById("m0").onclick=()=>{store.set("sureli",false);home()};
   app.querySelectorAll(".lvb").forEach(b=>b.onclick=()=>{store.set("zorluk",b.dataset.lv);home();document.querySelector(".seg3")?.scrollIntoView({block:"start"})});
-  app.querySelectorAll(".test,.kbtn,.kchip").forEach(b=>b.onclick=()=>start(+b.dataset.set));
+  app.querySelectorAll(".adb").forEach(b=>b.onclick=()=>{const v=b.dataset.adet; store.set("dersAdet", v==="hepsi"?v:+v); home(); document.querySelector(".ders-sec")?.scrollIntoView({block:"start"})});
+  app.querySelectorAll(".test,.kbtn,.kchip,.dbtn").forEach(b=>b.onclick=()=>start(+b.dataset.set));
   document.getElementById("pl").onclick=()=>practice("levha");
   document.getElementById("pg").onclick=()=>practice("gecis");
   document.getElementById("pk").onclick=()=>practice("gosterge");
@@ -1275,7 +1296,10 @@ function home(){
 // ---------- Sınav ----------
 function start(id){
   let list;
-  if(DERS[id]){
+  if(GENEL[id]){
+    const all=shuffle(tumDers(GENEL[id])), a=dersAdet();
+    list = a==="hepsi" ? all : all.slice(0,a);
+  } else if(DERS[id]){
     list = shuffle(kursDers(DERS[id]));
   } else if(id>=11 && id<=18){
     list = Q.filter(q=>q[1]===id);
