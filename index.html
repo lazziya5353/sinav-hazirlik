@@ -110,6 +110,21 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline
 
 .learn{display:flex;flex-direction:column;gap:12px;border-top:2px dashed var(--line);padding-top:16px}
 .learn h2{font-size:1.7rem}
+.gl{position:relative;border-bottom:1.5px dotted currentColor;cursor:help;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.gl::after{content:"";position:absolute;inset:-8px -3px}
+.gl:focus-visible{outline:2px solid var(--yellow);outline-offset:1px;border-radius:2px}
+.glpop{position:fixed;z-index:50;max-width:min(300px,calc(100vw - 24px));background:var(--surface);color:var(--fg);border:1px solid var(--line);border-top:3px solid var(--sign);border-radius:12px;padding:10px 14px;box-shadow:0 8px 28px rgba(0,0,0,.28);display:flex;flex-direction:column;gap:2px;font-size:.92rem;line-height:1.4;text-align:left}
+.glpop small{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.glpop b{font-family:var(--display);font-size:1.15rem}
+.glpop p{margin:0}
+.sozara{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.sozliste{display:flex;flex-direction:column;gap:14px}
+.sozgrup{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.sozgrup h3{font-size:1.25rem}
+.sozrow{display:flex;flex-direction:column;gap:2px;padding-top:8px;border-top:1px solid var(--line)}
+.sozgrup h3+.sozrow{border-top:0;padding-top:0}
+.sozrow b{font-weight:600}
+.sozrow p{margin:0;color:var(--muted);font-size:.93rem}
 .lcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .lcard h3{font-size:1.35rem}
 .strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
@@ -1214,6 +1229,7 @@ const setMode = q => app.classList.toggle("quizmode", q);
 const bottom = html => { let b=document.getElementById("bb"); if(!html){ if(b) b.remove(); return } if(!b){ b=document.createElement("div"); b.id="bb"; b.className="bottombar"; document.body.appendChild(b) } b.innerHTML=`<div class="in">${html}</div>`; return b };
 
 function home(){
+  if(typeof glClose==="function") glClose();
   clearInterval(tick); S=null; P=null; setMode(false); bottom(null);
   const best = store.get("best")||{};
   app.innerHTML = `
@@ -1281,6 +1297,11 @@ function home(){
       <div class="strip dashstrip" aria-hidden="true">${["yag","hararet","aku","fren","abs","motor","kemer","yakit","uzunfar"].map(gosSvg).join("")}</div>
       <button class="btn primary" id="pk">Gösterge antrenmanını başlat</button>
     </article>
+    <article class="lcard">
+      <h3>Motor Sözlüğü</h3>
+      <p class="note">${SOZLUK.length} kelime. Motor sorularındaki altı noktalı kelimelere dokununca da anlamı açılır.</p>
+      <button class="btn primary" id="psz">Sözlüğü aç</button>
+    </article>
   </section>`;
   document.getElementById("ad").addEventListener("input",e=>store.set("ad",e.target.value));
   document.getElementById("m1").onclick=()=>{store.set("sureli",true);home()};
@@ -1291,6 +1312,158 @@ function home(){
   document.getElementById("pl").onclick=()=>practice("levha");
   document.getElementById("pg").onclick=()=>practice("gecis");
   document.getElementById("pk").onclick=()=>practice("gosterge");
+  document.getElementById("psz").onclick=sozluk;
+}
+
+// ---------- Motor Sözlüğü ----------
+// [terim, grup, anlam, eşleşme kökleri ("=" ile başlayan: ek almaz, tam kelime)]
+const SOZLUK = [
+["Silindir","Motorun içi","Yakıtın yandığı, pistonun içinde gidip geldiği boru şeklindeki oda.",["silindir"]],
+["Piston","Motorun içi","Silindirin içinde aşağı yukarı hareket eden parça; yanmanın gücünü ilk o karşılar.",["piston"]],
+["Segman","Motorun içi","Pistonun etrafındaki halkalar. Sızdırmazlık sağlar, fazla yağı sıyırır. Aşınırsa motor yağ yakar ve egzozdan mavi duman çıkar.",["segman"]],
+["Biyel (piston kolu)","Motorun içi","Pistonu krank miline bağlayan kol.",["biyel","piston kol"]],
+["Krank mili","Motorun içi","Pistonların aşağı yukarı hareketini dönme hareketine çeviren mil.",["krank mil"]],
+["Eksantrik mili","Motorun içi","Supapları zamanında açıp kapatan mil; krank milinin yarı hızında döner.",["eksantrik mil"]],
+["Supap","Motorun içi","Silindire hava ve yakıt girişini (emme) ve yanmış gazın çıkışını (egzoz) sağlayan kapakçık.",["supap"]],
+["Triger kayışı","Motorun içi","Krank mili ile eksantrik milini aynı ritimde döndüren kayış. Koparsa motor büyük hasar görebilir.",["triger"]],
+["Volan","Motorun içi","Krank milinin ucundaki ağır disk. Dönüşü dengeler, marş motoru onu çevirir, debriyaj ona bağlanır.",["volan"]],
+["Karter","Motorun içi","Motorun altındaki yağ haznesi.",["karter"]],
+["Silindir kapağı","Motorun içi","Silindirlerin üstünü kapatan, supapların bulunduğu parça.",["silindir kapa"]],
+["4 zaman","Motorun içi","Emme, sıkıştırma, iş (ateşleme) ve egzoz. Bir çevrimde krank mili 2 tur (720°) döner.",["4 zaman","dört zaman"]],
+["Kompresyon","Motorun içi","Silindirde sıkıştırma basıncı.",["kompresyon"]],
+["Rölanti","Motorun içi","Gaza basmadan motorun boşta çalışma devri.",["rölanti"]],
+["Karbüratör","Yakıt ve hava","Eski benzinli araçlarda havayla benzini karıştıran parça.",["karbüratör"]],
+["Enjektör","Yakıt ve hava","Yakıtı silindire püskürten meme.",["enjektör"]],
+["Enjeksiyon pompası","Yakıt ve hava","Dizelde yakıtı yüksek basınçla enjektörlere gönderen pompa.",["enjeksiyon pompa"]],
+["Besleme pompası","Yakıt ve hava","Yakıtı depodan çekip enjeksiyon pompasına yollayan pompa.",["besleme pompa"]],
+["Hava filtresi","Yakıt ve hava","Motora giren havayı süzer. Kirlenirse yakıt tüketimi artar, güç düşer.",["hava filtre"]],
+["Yakıt filtresi","Yakıt ve hava","Yakıttaki kiri süzer.",["yakıt filtre"]],
+["Polen filtresi","Yakıt ve hava","Araç içine (kabine) giren havayı süzer; motorla ilgisi yoktur.",["polen filtre"]],
+["Zengin karışım","Yakıt ve hava","Havaya göre fazla yakıt; egzozdan siyah duman çıkar.",["zengin karışım"]],
+["Emme manifoldu","Yakıt ve hava","Havayı silindirlere dağıtan boru.",["emme manifold"]],
+["Egzoz manifoldu","Yakıt ve hava","Yanmış gazları silindirlerden toplayıp egzoz borusuna veren boru.",["egzoz manifold"]],
+["Susturucu","Yakıt ve hava","Egzoz sesini azaltır.",["susturucu"]],
+["Katalitik konvertör (katalizör)","Yakıt ve hava","Egzozdaki zehirli gazları daha az zararlı hale getirir.",["katalitik konvertör","katalizör"]],
+["Turboşarj","Yakıt ve hava","Egzoz gazıyla dönüp motora sıkıştırılmış hava basar, gücü artırır.",["turboşarj","turbo"]],
+["Emisyon","Yakıt ve hava","Aracın havaya saldığı egzoz gazları.",["emisyon"]],
+["Akü","Ateşleme ve elektrik","Elektriği depolar, marş anında verir. 12 V akü 6 hücrelidir.",["akü"]],
+["Elektrolit (akü suyu)","Ateşleme ve elektrik","Saf su ve sülfürik asit karışımı. Eksilirse saf su eklenir.",["elektrolit","akü su"]],
+["Kontrol gözü","Ateşleme ve elektrik","Akünün üstündeki gösterge. Yeşil şarj iyi, siyah şarj gerekli, açık renk değiştir demek.",["kontrol göz"]],
+["Alternatör (şarj dinamosu)","Ateşleme ve elektrik","Motor çalışınca elektrik üretip aküyü şarj eder.",["alternatör","şarj dinamo"]],
+["Regülatör","Ateşleme ve elektrik","Alternatörün voltajını sınırlar, aküyü aşırı şarjdan korur.",["regülatör"]],
+["Marş motoru","Ateşleme ve elektrik","Motoru ilk çalıştıran küçük elektrik motoru.",["marş motor"]],
+["Buji","Ateşleme ve elektrik","Benzinli motorda karışımı kıvılcımla ateşler.",["buji"]],
+["Endüksiyon (ateşleme) bobini","Ateşleme ve elektrik","12 voltu binlerce volta çıkarır ki buji kıvılcım çaksın.",["endüksiyon bobin","ateşleme bobin","bobin"]],
+["Konjektör (distribütör)","Ateşleme ve elektrik","Yüksek voltajı sırayla bujilere dağıtır.",["konjektör","distribütör"]],
+["Kızdırma bujisi","Ateşleme ve elektrik","Dizelde soğuk motoru çalıştırmak için yanma odasını ısıtır.",["kızdırma buji"]],
+["Avans","Ateşleme ve elektrik","Bujinin ne zaman kıvılcım çakacağının ayarı.",["avans"]],
+["Sigorta","Ateşleme ve elektrik","Aşırı akımda eriyip devreyi keser, kabloları yanmaktan korur.",["sigorta"]],
+["Fren müşiri","Ateşleme ve elektrik","Fren pedalına basınca stop lambalarını yakan anahtar.",["fren müşir","müşir"]],
+["Radyatör","Soğutma ve yağlama","Motordan ısınan suyu havayla soğutur.",["radyatör"]],
+["Radyatör kapağı","Soğutma ve yağlama","Sistemdeki basıncı tutar. Motor sıcakken açılmaz, kaynar su fışkırır.",["radyatör kapa"]],
+["Termostat","Soğutma ve yağlama","Motor ısınana kadar suyu radyatöre göndermez, sıcaklığı dengede tutar.",["termostat"]],
+["Su pompası","Soğutma ve yağlama","Soğutma suyunu motorda dolaştırır.",["su pompa"]],
+["Vantilatör (fan) kayışı","Soğutma ve yağlama","Su pompası ve alternatörü çeviren kayış; koparsa hararet ve şarj sorunu olur.",["vantilatör kayı","fan kayı","vantilatör"]],
+["Antifriz","Soğutma ve yağlama","Soğutma suyunun donmasını, paslanmayı ve kireçlenmeyi önler.",["antifriz"]],
+["Hararet","Soğutma ve yağlama","Motorun aşırı ısınması.",["hararet"]],
+["Yağ filtresi","Soğutma ve yağlama","Motor yağındaki kiri süzer; tıkanırsa yağlama bozulur.",["yağ filtre"]],
+["Yağ çubuğu","Soğutma ve yağlama","Yağ seviyesini ölçer; seviye MIN ile MAX arasında olmalı.",["yağ çubu"]],
+["10W-40","Soğutma ve yağlama","Yağın akışkanlığı. \"W\" kış demek; ilk sayı soğuktaki, ikinci sayı sıcaktaki akışkanlığı gösterir.",["=10w-40"]],
+["Debriyaj (kavrama)","Güç aktarma","Motor ile vites kutusu bağlantısını kesip vites değiştirmeyi sağlar. Balatası aşınınca kaçırır (patinaj).",["debriyaj","kavrama"]],
+["Vites kutusu","Güç aktarma","Hız ve gücü yola göre ayarlar.",["vites kutu"]],
+["Şaft (kardan mili)","Güç aktarma","Vites kutusundaki hareketi arka diferansiyele taşır.",["şaft","kardan mil"]],
+["Diferansiyel","Güç aktarma","Virajda iç ve dış tekerleklerin farklı hızda dönmesini sağlar.",["diferansiyel"]],
+["Aks","Güç aktarma","Diferansiyelden tekerleklere hareket ileten mil.",["=aks","=aksı","=aksa","=aksın","=akslar","=aksları","=akslarla","=akslardan"]],
+["Hidrolik fren","Fren-süspansiyon-direksiyon","Pedal basıncını sıvıyla tekerleklere iletir.",["hidrolik fren"]],
+["Fren hidroliği","Fren-süspansiyon-direksiyon","Fren sıvısı. Nem çektiği için zamanla değiştirilir; azalırsa pedal boşa gider.",["fren hidroli"]],
+["Servis (ayak) freni","Fren-süspansiyon-direksiyon","Dört tekerleği frenler. El freni çoğunlukla arka tekerleklere etki eder.",["servis fren","ayak fren"]],
+["Motor freni","Fren-süspansiyon-direksiyon","Yokuş inerken küçük viteste motorun aracı yavaşlatması.",["motor fren"]],
+["ABS","Fren-süspansiyon-direksiyon","Ani frende tekerleklerin kilitlenmesini önler, direksiyon hakimiyeti kalır.",["=abs"]],
+["Amortisör","Fren-süspansiyon-direksiyon","Yayların zıplamasını söndürür, yol tutuşu artırır.",["amortisör"]],
+["Helezon yay","Fren-süspansiyon-direksiyon","Süspansiyondaki spiral yay.",["helezon"]],
+["Rotil","Fren-süspansiyon-direksiyon","Tekerleği direksiyon koluna bağlayan oynar mafsal.",["rotil"]],
+["Rot ayarı","Fren-süspansiyon-direksiyon","Tekerlek açılarının ayarı. Bozuksa araç bir yöne çeker, lastik tek taraftan aşınır.",["rot ayar"]],
+["Balans ayarı","Fren-süspansiyon-direksiyon","Tekerleğin ağırlık dengesi. Bozuksa belli hızlarda direksiyon titrer.",["balans"]],
+["205/55 R16 91V","Lastik ve diğer","205 mm genişlik, %55 yanak oranı, R radyal, 16 inç jant, 91 yük endeksi, V hız endeksi.",["=205/55 r16 91v","=205/55 r16"]],
+["DOT kodu","Lastik ve diğer","Son 4 hane üretim tarihidir; \"2324\", 2024'ün 23. haftası demek.",["=dot"]],
+["Diş derinliği","Lastik ve diğer","Binek lastikte en az 1,6 mm.",["diş derinli"]],
+["Kış lastiği","Lastik ve diğer","Yaklaşık +7°C altında daha iyi tutunur.",["kış lasti"]],
+["Rodaj","Lastik ve diğer","Yeni motorun alıştırma dönemi; tam gazdan ve ani hızlanmadan kaçınılır.",["rodaj"]],
+["Takoz","Lastik ve diğer","Kriko kaldırırken aracın kaymaması için tekerleğe konan kama.",["takoz"]],
+["Hava yastığı (airbag)","Lastik ve diğer","Çarpmada otomatik şişen yastık; kemerle birlikte işe yarar.",["hava yastı","airbag"]]
+];
+const SOZ_GRUPLAR = ["Motorun içi","Yakıt ve hava","Ateşleme ve elektrik","Soğutma ve yağlama","Güç aktarma","Fren-süspansiyon-direksiyon","Lastik ve diğer"];
+const TRL = s => String(s).toLocaleLowerCase("tr");
+const LET = "a-zçğıöşüâîû0-9";
+const SOZ_RE = (() => {
+  const pats = [];
+  SOZLUK.forEach((t,i)=>t[3].forEach(s=>{ const exact=s[0]==="="; const st=exact?s.slice(1):s; pats.push({i, st, exact}); }));
+  pats.sort((a,b)=>b.st.length-a.st.length);
+  const rx = s => s.replace(/[.*+?^${}()|[\]\\\/\-]/g,"\\$&");
+  const alts = pats.map((p,k)=>`(${rx(p.st)}${p.exact?"":`[${LET}]*`})`);
+  return { re: new RegExp(`(?<![${LET}])(?:${alts.join("|")})(?![${LET}])`,"g"), pats };
+})();
+// Kaçışlı metinde (esc sonrası) terimleri işaretler; her terimin yalnızca ilk geçtiği yer
+function gloss(html, on){
+  if(!on) return html;
+  const low = TRL(html);
+  if(low.length!==html.length) return html;
+  const used = new Set(); let out="", last=0, m;
+  SOZ_RE.re.lastIndex=0;
+  while((m=SOZ_RE.re.exec(low))){
+    const g = m.slice(1).findIndex(x=>x!==undefined);
+    const id = SOZ_RE.pats[g].i;
+    const before = html.slice(0,m.index);
+    if(used.has(id) || /&[a-z]*$/i.test(before)) continue;
+    used.add(id);
+    out += html.slice(last,m.index)+`<span class="gl" data-g="${id}" role="button" tabindex="0">${html.slice(m.index,m.index+m[0].length)}</span>`;
+    last = m.index+m[0].length;
+  }
+  return out+html.slice(last);
+}
+const isM = q => q && q[0]==="M";
+
+// Açılır açıklama kutusu (sayfa akışını değiştirmez)
+let glPop=null, glOpen=null;
+function glClose(){ if(glPop){ glPop.hidden=true; } glOpen=null; }
+function glShow(el){
+  const id=+el.dataset.g, t=SOZLUK[id]; if(!t) return;
+  if(glOpen===el){ glClose(); return; }
+  if(!glPop){ glPop=document.createElement("div"); glPop.className="glpop"; glPop.setAttribute("role","tooltip"); glPop.hidden=true; document.body.appendChild(glPop); }
+  glPop.innerHTML=`<small>${esc(t[1])}</small><b>${esc(t[0])}</b><p>${esc(t[2])}</p>`;
+  glPop.hidden=false; glPop.style.left="0px"; glPop.style.top="0px";
+  const r=el.getBoundingClientRect(), pw=glPop.offsetWidth, ph=glPop.offsetHeight, M=12, vw=innerWidth, vh=innerHeight;
+  let left=Math.min(Math.max(M, r.left + r.width/2 - pw/2), vw-pw-M);
+  let top=r.bottom+8; if(top+ph>vh-M){ top=r.top-ph-8; } if(top<M) top=Math.max(M, Math.min(vh-ph-M, r.bottom+8));
+  glPop.style.left=left+"px"; glPop.style.top=top+"px";
+  glOpen=el;
+}
+const glHit = e => e.target.closest && e.target.closest(".gl");
+document.addEventListener("click", e=>{ const g=glHit(e); if(g){ e.preventDefault(); e.stopPropagation(); glShow(g); return; } if(glOpen && !(e.target.closest && e.target.closest(".glpop"))) glClose(); }, true);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ glClose(); return; } const g=glHit(e); if(g && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); e.stopPropagation(); glShow(g); } }, true);
+addEventListener("scroll", ()=>{ if(glOpen) glClose(); }, {passive:true});
+addEventListener("resize", ()=>{ if(glOpen) glClose(); });
+
+function sozluk(){
+  clearInterval(tick); S=null; P=null; setMode(false); bottom(null); glClose();
+  app.innerHTML = `
+  <div class="topbar">
+    <div class="bar"><button class="x" id="quit">✕ Çık</button><h2>Motor Sözlüğü</h2><span class="timer free">${SOZLUK.length} kelime</span></div>
+  </div>
+  <input class="sozara" id="sozara" type="search" placeholder="Kelime ara (ör. fren, akü)" autocomplete="off" aria-label="Sözlükte ara">
+  <div id="sozliste" class="sozliste"></div>`;
+  const draw = q => {
+    const k=TRL(q.trim());
+    const html = SOZ_GRUPLAR.map(g=>{
+      const rows = SOZLUK.filter(t=>t[1]===g && (!k || TRL(t[0]+" "+t[2]+" "+t[3].join(" ")).includes(k)));
+      return rows.length ? `<section class="sozgrup"><h3>${esc(g)}</h3>${rows.map(t=>`<div class="sozrow"><b>${esc(t[0])}</b><p>${esc(t[2])}</p></div>`).join("")}</section>` : "";
+    }).join("");
+    document.getElementById("sozliste").innerHTML = html || `<p class="note">“${esc(q)}” için sonuç yok.</p>`;
+  };
+  draw("");
+  document.getElementById("sozara").addEventListener("input", e=>draw(e.target.value));
+  document.getElementById("quit").onclick=home;
+  scrollTo(0,0);
 }
 
 // ---------- Sınav ----------
@@ -1318,6 +1491,7 @@ function start(id){
 }
 
 function quiz(){
+  glClose();
   setMode(true);
   const q=S.list[S.i], n=S.list.length, done=S.ans.filter(a=>a!==null).length;
   const open = document.querySelector("details.qlist")?.open;
@@ -1330,8 +1504,8 @@ function quiz(){
   <article class="qcard">
     <div class="qmeta"><span class="chip">Soru ${S.i+1} / ${n}</span><span class="chip">${KAT[q[0]]}${S.id===7?` · ${LVNAME(q)}`:""}</span></div>
     ${fig(q[6])}
-    <p class="qtext">${esc(q[2])}</p>
-    <div class="opts">${q[3].map((o,j)=>`<button class="opt${S.ans[S.i]===j?" sel":""}" data-j="${j}"><span class="l">${"ABCD"[j]}</span><span>${esc(o)}</span></button>`).join("")}</div>
+    <p class="qtext">${gloss(esc(q[2]),isM(q))}</p>
+    <div class="opts">${q[3].map((o,j)=>`<button class="opt${S.ans[S.i]===j?" sel":""}" data-j="${j}"><span class="l">${"ABCD"[j]}</span><span>${gloss(esc(o),isM(q))}</span></button>`).join("")}</div>
   </article>
   ${S.confirm?`<div class="confirm" id="cf"><p><b>${n-done} soru boş.</b> Yine de bitirmek istiyor musun?</p><div class="row"><button class="btn warn" id="yes">Evet, bitir</button><button class="btn" id="no">Devam et</button></div></div>`:""}
   <details class="qlist"${open?" open":""}><summary>Soru listesi · ${done}/${n} cevaplandı</summary>
@@ -1396,6 +1570,7 @@ function result(scrollKey){
 }
 
 function review(ids,pos,title){
+  glClose();
   setMode(true);
   const k=ids[pos], q=S.list[k], a=S.ans[k], st=stOf(k);
   const head = st==="ok"?`<b>Doğru bildin</b>`:st==="empty"?`<b>Boş bıraktın</b>`:`<b>Senin cevabın: ${"ABCD"[a]}) ${esc(q[3][a])}</b>`;
@@ -1407,8 +1582,8 @@ function review(ids,pos,title){
   <article class="qcard">
     <div class="qmeta"><span class="chip">${k+1}. soru · ${LVNAME(q)}</span><span class="chip">${KAT[q[0]]}</span></div>
     ${fig(q[6])}
-    <p class="qtext">${esc(q[2])}</p>
-    <div class="opts">${q[3].map((o,j)=>`<div class="opt${j===q[4]?" right":""}${j===a&&j!==q[4]?" wrong":""}"><span class="l">${"ABCD"[j]}</span><span>${esc(o)}${j===q[4]?" <b>✓ doğru cevap</b>":j===a?" <b>✗ senin cevabın</b>":""}</span></div>`).join("")}</div>
+    <p class="qtext">${gloss(esc(q[2]),isM(q))}</p>
+    <div class="opts">${q[3].map((o,j)=>`<div class="opt${j===q[4]?" right":""}${j===a&&j!==q[4]?" wrong":""}"><span class="l">${"ABCD"[j]}</span><span>${gloss(esc(o),isM(q))}${j===q[4]?" <b>✓ doğru cevap</b>":j===a?" <b>✗ senin cevabın</b>":""}</span></div>`).join("")}</div>
     <div class="feedback ${st==="ok"?"ok":"bad"}">${head}<p><b>Doğrusu ${"ABCD"[q[4]]}) ${esc(q[3][q[4]])}.</b></p><p><b>Neden?</b> ${esc(q[5])}</p></div>
   </article>`;
   bottom(`<button class="btn" id="rp" ${pos===0?"disabled":""}>‹ Önceki</button>${pos<ids.length-1?`<button class="btn primary" id="rn">Sonraki ›</button>`:`<button class="btn primary" id="rd">Sonuca dön</button>`}`);
