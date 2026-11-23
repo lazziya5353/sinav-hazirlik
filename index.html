@@ -1302,6 +1302,11 @@ function home(){
       <p class="note">${SOZLUK.length} kelime. Motor sorularındaki altı noktalı kelimelere dokununca da anlamı açılır.</p>
       <button class="btn primary" id="psz">Sözlüğü aç</button>
     </article>
+    <article class="lcard">
+      <h3>İlk Yardım Sözlüğü</h3>
+      <p class="note">${ILK_SOZLUK.length} kelime. İlk yardım sorularındaki altı noktalı kelimelere dokununca da anlamı açılır.</p>
+      <button class="btn primary" id="pisz">Sözlüğü aç</button>
+    </article>
   </section>`;
   document.getElementById("ad").addEventListener("input",e=>store.set("ad",e.target.value));
   document.getElementById("m1").onclick=()=>{store.set("sureli",true);home()};
@@ -1312,7 +1317,8 @@ function home(){
   document.getElementById("pl").onclick=()=>practice("levha");
   document.getElementById("pg").onclick=()=>practice("gecis");
   document.getElementById("pk").onclick=()=>practice("gosterge");
-  document.getElementById("psz").onclick=sozluk;
+  document.getElementById("psz").onclick=()=>sozluk("M");
+  document.getElementById("pisz").onclick=()=>sozluk("I");
 }
 
 // ---------- Motor Sözlüğü ----------
@@ -1393,41 +1399,133 @@ const SOZLUK = [
 ["Hava yastığı (airbag)","Lastik ve diğer","Çarpmada otomatik şişen yastık; kemerle birlikte işe yarar.",["hava yastı","airbag"]]
 ];
 const SOZ_GRUPLAR = ["Motorun içi","Yakıt ve hava","Ateşleme ve elektrik","Soğutma ve yağlama","Güç aktarma","Fren-süspansiyon-direksiyon","Lastik ve diğer"];
+// ---------- İlk Yardım Sözlüğü ----------
+// [terim, grup, anlam, eşleşme kökleri, 1 = soruda işaretleme (çok yaygın kelime)]
+const ILK_SOZLUK = [
+["İlk yardım","Temel kavramlar","Olay yerinde, sağlık ekibi gelene kadar ilaçsız yapılan hayat kurtarıcı uygulamalar.",["ilk yardım"],1],
+["Acil tedavi","Temel kavramlar","Sağlık personelinin yaptığı tıbbi müdahale; ilk yardımdan farklıdır.",["acil tedavi"]],
+["Hayat kurtarma zinciri","Temel kavramlar","112'ye haber ver, olay yerinde ilk yardım, ambulansla müdahale, hastanede tedavi.",["hayat kurtarma zincir"]],
+["112","Temel kavramlar","Acil çağrı numarası; ambulans, itfaiye, polis ve jandarma burada birleşti.",["=112"],1],
+["Olay yeri güvenliği","Temel kavramlar","Müdahaleden önce yeni kaza, yangın, trafik gibi tehlikeleri ortadan kaldırmak.",["olay yeri güvenli","olay yerinin güvenli"]],
+["Kazazede","Temel kavramlar","Kaza geçirmiş, yaralanmış ya da hastalanmış kişi.",["kazazede"],1],
+["Hücre / doku / organ / sistem","Temel kavramlar","Hücreler dokuyu, dokular organı, organlar sistemi oluşturur.",["hücre","=doku","=dokuyu","=dokuya","=dokuda","=dokudan","=dokusu","=dokusunu","=dokular","=dokuları","=dokuların","=dokulara","=dokularda","=dokulardan","=organ","=organı","=organın","=organa","=organda","=organdan","=organlar","=organları","=organların","=organlara","=organlarda","=organlardan","=organlarına"]],
+["Dolaşım sistemi","Temel kavramlar","Kalp ve damarlar; kanı ve oksijeni vücuda taşır.",["dolaşım sistem"]],
+["Solunum sistemi","Temel kavramlar","Akciğerler ve hava yolları; oksijen alıp karbondioksit verir.",["solunum sistem"]],
+["Sinir sistemi","Temel kavramlar","Beyin, omurilik ve sinirler; vücudu yönetir.",["sinir sistem"]],
+["Omurilik","Temel kavramlar","Omurganın içinden geçen sinir kordonu; zarar görürse felç olur.",["omurili"]],
+["Felç","Temel kavramlar","Sinir hasarı yüzünden vücudun bir bölümünün hareket edememesi.",["felç","felc"]],
+["Birinci değerlendirme","Değerlendirme","Bilinç, hava yolu, solunum ve dolaşımın hızla kontrol edilmesi.",["birinci değerlendirme"]],
+["İkinci değerlendirme","Değerlendirme","Baştan aşağı muayene ve yaralıyla görüşerek bilgi alma.",["ikinci değerlendirme","baştan aşağı muayene","baştan aşağı kontrol"]],
+["Bilinç kontrolü","Değerlendirme","Omuzlara hafifçe dokunup \"İyi misiniz?\" diye seslenmek; bebekte ayak tabanına dokunulur.",["bilinç kontrol","bilinç","bilinc"]],
+["Yaşam bulguları","Değerlendirme","Bilinç, solunum ve nabız; hayati bulgular.",["yaşam bulgu","hayati bulgu"]],
+["Nabız","Değerlendirme","Kalp atımının atardamarda hissedilmesi; yetişkinde dakikada 60–100.",["nabız","nabz"]],
+["Solunum sayısı","Değerlendirme","Dakikadaki nefes sayısı; yetişkinde 12–20.",["solunum sayı"]],
+["Bak-dinle-hisset","Değerlendirme","Göğse bak, nefes sesini dinle, yanağınla hisset; 10 saniye sürer.",["bak-dinle-hisset","bak dinle hisset","bak, dinle, hisset"]],
+["ABC","Değerlendirme","A: hava yolu, B: solunum, C: dolaşım; değerlendirme sırası.",["=abc"]],
+["Hava yolu","Değerlendirme","Ağızdan akciğerlere havanın geçtiği yol; dil geri kaçınca tıkanabilir.",["hava yol"]],
+["Baş geri, çene yukarı","Değerlendirme","Alına bastırıp çeneyi kaldırarak hava yolunu açma; omurga şüphesinde yapılmaz.",["baş geri, çene yukarı","baş geri - çene yukarı","baş geri-çene yukarı","baş geri çene yukarı"]],
+["Siyanoz (morarma)","Değerlendirme","Oksijensizlikten dudak, parmak ucu ve burnun morarması.",["siyanoz","morar"]],
+["Temel yaşam desteği","Temel yaşam desteği","Solunumu ve kalbi duran kişiye kalp masajı ve suni solunumla yapılan uygulama.",["temel yaşam deste","=tyd"]],
+["Kalp masajı","Temel yaşam desteği","Göğüs kemiğinin alt yarısına bası; yetişkinde 5–6 cm, dakikada 100–120.",["kalp masaj","göğüs bası","kalp bası"]],
+["Suni solunum","Temel yaşam desteği","Ağızdan ağıza nefes vermek; her nefes yaklaşık 1 saniye.",["suni solunum","yapay solunum"]],
+["30:2","Temel yaşam desteği","30 göğüs basısına 2 suni solunum; yetişkin, çocuk ve bebekte aynı oran.",["=30:2"]],
+["OED","Temel yaşam desteği","Otomatik eksternal defibrilatör; kalp ritmini analiz edip gerekirse şok veren, sesli talimat veren cihaz.",["=oed","otomatik eksternal defibrilatör","defibrilatör"]],
+["Heimlich manevrası","Temel yaşam desteği","Tam hava yolu tıkanıklığında arkadan sarılıp göbeğin üstüne içeri-yukarı bası.",["heimlich"]],
+["Kısmi tıkanma","Temel yaşam desteği","Kişi öksürebiliyor ve konuşabiliyor; öksürmeye teşvik edilir, müdahale edilmez.",["kısmi tıkan"]],
+["Tam tıkanma","Temel yaşam desteği","Kişi konuşamıyor, öksüremiyor; Heimlich uygulanır.",["tam tıkan"]],
+["Bebek (TYD'de)","Temel yaşam desteği","0–1 yaş; iki parmakla 4 cm bası, ağız ve burun birlikte kapatılır, nabız koldan alınır.",["bebek","bebeğ"]],
+["Çocuk (TYD'de)","Temel yaşam desteği","1–8 yaş; tek elle 5 cm bası, yalnızsan önce 5 döngü yapıp sonra 112 aranır.",["çocuk","çocuğ"]],
+["Atardamar","Kanamalar","Kalpten vücuda kan taşıyan damar; kanaması açık kırmızı ve fışkırarak olur.",["atardamar","atar damar"]],
+["Toplardamar","Kanamalar","Kanı kalbe geri taşıyan damar; kanaması koyu kırmızı ve taşarak olur.",["toplardamar","toplar damar"]],
+["Kılcal damar","Kanamalar","En ince damar; kanaması sızıntı şeklinde ve hafiftir.",["kılcal"]],
+["Kanama","Kanamalar","Damar dışına kan çıkması.",["kanama"],1],
+["İç kanama","Kanamalar","Vücut içine olan kanama; dışarıdan görünmez, şok belirtileriyle anlaşılır.",["iç kanama"]],
+["Doğrudan bası","Kanamalar","Temiz bezle yaranın üzerine bastırmak; ilk yapılacak kanama durdurma yöntemi.",["doğrudan bası","yaraya bası"]],
+["Bası noktası","Kanamalar","Kanayan yeri besleyen atardamarın kemiğe bastırıldığı nokta.",["bası nokta"]],
+["Şah damarı","Kanamalar","Boyundaki atardamar; yetişkinde nabız buradan alınır, bası tek taraftan yapılır.",["şah damar"]],
+["Uyluk atardamarı","Kanamalar","Kasıktan geçen atardamar; bacak kanamalarında buraya bastırılır.",["uyluk atardamar","uyluk atar damar"]],
+["Turnike","Kanamalar","Boğucu sargı; uzuv kopması gibi durdurulamayan kanamada son çare; saat yazılır.",["turnike","boğucu sargı"]],
+["Burun kanaması","Kanamalar","Baş öne eğilip burun kanatlarına 5 dakika bastırılır; baş geriye yatırılmaz.",["burun kanama"]],
+["Kırık","Kırık, çıkık, burkulma","Kemik bütünlüğünün bozulması.",["kırık","kırığ"]],
+["Açık kırık","Kırık, çıkık, burkulma","Kemik ucunun deriyi delip dışarı çıktığı kırık; kemik içeri itilmez.",["açık kırık","açık kırığ"]],
+["Kapalı kırık","Kırık, çıkık, burkulma","Derinin sağlam kaldığı kırık.",["kapalı kırık","kapalı kırığ"]],
+["Çıkık","Kırık, çıkık, burkulma","Eklemdeki kemiklerin yerinden çıkması; yerine oturtulmaya çalışılmaz.",["çıkık","çıkığ"]],
+["Burkulma","Kırık, çıkık, burkulma","Eklem bağlarının zorlanması; soğuk uygulanır, bölge yukarı kaldırılır.",["burkul"]],
+["Tespit","Kırık, çıkık, burkulma","Kırık bölgeyi hareketsiz hale getirmek; bir üst ve bir alt eklem de sabitlenir.",["tespit","sabitle"]],
+["Atel","Kırık, çıkık, burkulma","Kırığı sabitlemek için kullanılan sert malzeme (tahta, karton vb.).",["atel"]],
+["Kol askısı","Kırık, çıkık, burkulma","Kolu ve omzu sabitlemek için boyuna asılan üçgen sargı.",["kol askı","askı"]],
+["Boyunluk","Kırık, çıkık, burkulma","Boyun yaralanmasında boynu sabitleyen yaka.",["boyunlu"]],
+["Yanık","Yanık, zehirlenme, hastalıklar","Isı, elektrik ya da kimyasalla doku hasarı; serin akan suyla 20 dakika soğutulur.",["yanık","yanığ"]],
+["Birinci derece yanık","Yanık, zehirlenme, hastalıklar","Sadece kızarıklık ve ağrı.",["birinci derece yanı","birinci derecede yanı","1. derece yanı"]],
+["İkinci derece yanık","Yanık, zehirlenme, hastalıklar","Kızarıklık ve su dolu kabarcık; kabarcık patlatılmaz.",["ikinci derece yanı","ikinci derecede yanı","2. derece yanı"]],
+["Üçüncü derece yanık","Yanık, zehirlenme, hastalıklar","Derinin tüm katmanları etkilenir, sinirler zarar gördüğü için ağrı az olabilir.",["üçüncü derece yanı","üçüncü derecede yanı","3. derece yanı"]],
+["Dokuzlar kuralı","Yanık, zehirlenme, hastalıklar","Yanık yüzeyini hesaplama: baş ve her kol %9, gövde önü-arkası ve her bacak %18, genital %1.",["dokuzlar kural"]],
+["Donma","Yanık, zehirlenme, hastalıklar","Soğuktan doku hasarı; bölge ovulmaz, yavaşça ısıtılır.",["donma","donmuş"]],
+["Hipotermi","Yanık, zehirlenme, hastalıklar","Vücut ısısının 35 °C'nin altına düşmesi.",["hipoterm"]],
+["Sıcak çarpması","Yanık, zehirlenme, hastalıklar","Aşırı sıcakta vücut ısısının yükselmesi; serin yere alınıp serinletilir.",["sıcak çarpma","güneş çarpma"]],
+["Zehirlenme","Yanık, zehirlenme, hastalıklar","Zararlı maddenin vücuda girmesi; kusturulmaz, 114 Zehir Danışma ya da 112 aranır.",["zehirlen"]],
+["Karbonmonoksit","Yanık, zehirlenme, hastalıklar","Kokusuz zehirli gaz; kapalı ortamda zehirlenmeye yol açar.",["karbonmonoksit","karbon monoksit"]],
+["Sara krizi","Yanık, zehirlenme, hastalıklar","Epilepsi nöbeti; beyindeki anormal elektrik boşalması; çevre güvenli hale getirilir, ağza bir şey konmaz.",["sara kriz","=sara","=sarası","=saralı","=saralılar","epilep"]],
+["Bayılma","Yanık, zehirlenme, hastalıklar","Beyne giden kanın azalmasıyla kısa süreli bilinç kaybı.",["bayıl"]],
+["Koma","Yanık, zehirlenme, hastalıklar","Uyaranlara yanıt alınamayan derin bilinç kaybı.",["koma"]],
+["Şok","Yanık, zehirlenme, hastalıklar","Hayati organlara yeterli kan gidememesi; soğuk-nemli cilt, hızlı ve zayıf nabız.",["şok"]],
+["Kafa travması","Yanık, zehirlenme, hastalıklar","Başa alınan darbe; kulak-burundan kanlı sıvı gelebilir.",["kafa travma","kafa yaralanma"]],
+["Delici göğüs yaralanması","Yanık, zehirlenme, hastalıklar","Göğse cisim saplanması; cisim çıkarılmaz, yarı oturuş verilir.",["delici göğüs yaralanma"]],
+["Koma pozisyonu","Pozisyonlar ve taşıma","Bilinci kapalı ama soluyan kişiyi yan yatırmak; kusmukta boğulmayı önler.",["koma pozisyon","derlenme pozisyon","yan yatış pozisyon"]],
+["Şok pozisyonu","Pozisyonlar ve taşıma","Sırt üstü yatırıp bacakları yaklaşık 30 cm kaldırmak.",["şok pozisyon"]],
+["Yarı oturuş pozisyonu","Pozisyonlar ve taşıma","Göğüs yaralanması ve solunum güçlüğünde solunumu kolaylaştırır.",["yarı oturuş","yarı oturur"]],
+["Rautek manevrası","Pozisyonlar ve taşıma","Kazazedeyi baş-boyun-gövde eksenini koruyarak araçtan hızla çıkarma.",["rautek","rentek"]],
+["Baş-boyun-gövde ekseni","Pozisyonlar ve taşıma","Omurga yaralanmasında baş, boyun ve gövdenin aynı hizada tutulması.",["baş-boyun-gövde eksen","baş, boyun ve gövde eksen","baş boyun gövde eksen"]],
+["İtfaiyeci yöntemi","Pozisyonlar ve taşıma","Tek ilk yardımcının yaralıyı omzunda taşıması; yürüyemeyen ya da bilinci kapalı kişide.",["itfaiyeci"]],
+["Sürükleme yöntemi","Pozisyonlar ve taşıma","Ağır yaralıyı ya da dar yerden çıkarılacak kişiyi yerde sürükleyerek taşıma.",["sürükleme yöntem"]],
+["Pansuman","Pozisyonlar ve taşıma","Yarayı temiz örtüyle kapatmak; pamuk kullanılmaz.",["pansuman"]],
+["Gazlı bez","Pozisyonlar ve taşıma","Yaraya konan steril bez; ilk yardım çantasında bulunur.",["gazlı bez","sargı bez"]]
+];
+const ILK_GRUPLAR = ["Temel kavramlar","Değerlendirme","Temel yaşam desteği","Kanamalar","Kırık, çıkık, burkulma","Yanık, zehirlenme, hastalıklar","Pozisyonlar ve taşıma"];
 const TRL = s => String(s).toLocaleLowerCase("tr");
 const LET = "a-zçğıöşüâîû0-9";
-const SOZ_RE = (() => {
+// Sözlük kaydı: kategori → sözlük (M motor, I ilk yardım)
+const GL = {
+  M: {ad:"Motor Sözlüğü", list:SOZLUK, gruplar:SOZ_GRUPLAR, ph:"Kelime ara (ör. fren, akü)"},
+  I: {ad:"İlk Yardım", list:ILK_SOZLUK, gruplar:ILK_GRUPLAR, ph:"Kelime ara (ör. kanama, nabız)"}
+};
+const glRe = list => {
   const pats = [];
-  SOZLUK.forEach((t,i)=>t[3].forEach(s=>{ const exact=s[0]==="="; const st=exact?s.slice(1):s; pats.push({i, st, exact}); }));
+  list.forEach((t,i)=>{ if(t[4]) return; t[3].forEach(s=>{ const exact=s[0]==="="; const st=exact?s.slice(1):s; pats.push({i, st, exact}); }); });
   pats.sort((a,b)=>b.st.length-a.st.length);
   const rx = s => s.replace(/[.*+?^${}()|[\]\\\/\-]/g,"\\$&");
   const alts = pats.map((p,k)=>`(${rx(p.st)}${p.exact?"":`[${LET}]*`})`);
   return { re: new RegExp(`(?<![${LET}])(?:${alts.join("|")})(?![${LET}])`,"g"), pats };
-})();
+};
+Object.values(GL).forEach(g=>g.rx=glRe(g.list));
 // Kaçışlı metinde (esc sonrası) terimleri işaretler; her terimin yalnızca ilk geçtiği yer
-function gloss(html, on){
-  if(!on) return html;
+function gloss(html, c){
+  const G = GL[c===true?"M":c];
+  if(!G) return html;
   const low = TRL(html);
   if(low.length!==html.length) return html;
+  const R = G.rx, key = c===true?"M":c;
   const used = new Set(); let out="", last=0, m;
-  SOZ_RE.re.lastIndex=0;
-  while((m=SOZ_RE.re.exec(low))){
+  R.re.lastIndex=0;
+  while((m=R.re.exec(low))){
     const g = m.slice(1).findIndex(x=>x!==undefined);
-    const id = SOZ_RE.pats[g].i;
+    const id = R.pats[g].i;
     const before = html.slice(0,m.index);
     if(used.has(id) || /&[a-z]*$/i.test(before)) continue;
     used.add(id);
-    out += html.slice(last,m.index)+`<span class="gl" data-g="${id}" role="button" tabindex="0">${html.slice(m.index,m.index+m[0].length)}</span>`;
+    out += html.slice(last,m.index)+`<span class="gl" data-c="${key}" data-g="${id}" role="button" tabindex="0">${html.slice(m.index,m.index+m[0].length)}</span>`;
     last = m.index+m[0].length;
   }
   return out+html.slice(last);
 }
 const isM = q => q && q[0]==="M";
+const glCat = q => q && GL[q[0]] ? q[0] : null;
 
 // Açılır açıklama kutusu (sayfa akışını değiştirmez)
 let glPop=null, glOpen=null;
 function glClose(){ if(glPop){ glPop.hidden=true; } glOpen=null; }
 function glShow(el){
-  const id=+el.dataset.g, t=SOZLUK[id]; if(!t) return;
+  const G=GL[el.dataset.c||"M"], t=G && G.list[+el.dataset.g]; if(!t) return;
   if(glOpen===el){ glClose(); return; }
   if(!glPop){ glPop=document.createElement("div"); glPop.className="glpop"; glPop.setAttribute("role","tooltip"); glPop.hidden=true; document.body.appendChild(glPop); }
   glPop.innerHTML=`<small>${esc(t[1])}</small><b>${esc(t[0])}</b><p>${esc(t[2])}</p>`;
@@ -1444,18 +1542,19 @@ document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ glClose(); retur
 addEventListener("scroll", ()=>{ if(glOpen) glClose(); }, {passive:true});
 addEventListener("resize", ()=>{ if(glOpen) glClose(); });
 
-function sozluk(){
+function sozluk(c){
+  const G = GL[typeof c==="string" && GL[c] ? c : "M"];
   clearInterval(tick); S=null; P=null; setMode(false); bottom(null); glClose();
   app.innerHTML = `
   <div class="topbar">
-    <div class="bar"><button class="x" id="quit">✕ Çık</button><h2>Motor Sözlüğü</h2><span class="timer free">${SOZLUK.length} kelime</span></div>
+    <div class="bar"><button class="x" id="quit">✕ Çık</button><h2>${G.ad}</h2><span class="timer free">${G.list.length} kelime</span></div>
   </div>
-  <input class="sozara" id="sozara" type="search" placeholder="Kelime ara (ör. fren, akü)" autocomplete="off" aria-label="Sözlükte ara">
+  <input class="sozara" id="sozara" type="search" placeholder="${G.ph}" autocomplete="off" aria-label="Sözlükte ara">
   <div id="sozliste" class="sozliste"></div>`;
   const draw = q => {
     const k=TRL(q.trim());
-    const html = SOZ_GRUPLAR.map(g=>{
-      const rows = SOZLUK.filter(t=>t[1]===g && (!k || TRL(t[0]+" "+t[2]+" "+t[3].join(" ")).includes(k)));
+    const html = G.gruplar.map(g=>{
+      const rows = G.list.filter(t=>t[1]===g && (!k || TRL(t[0]+" "+t[2]+" "+t[3].join(" ")).includes(k)));
       return rows.length ? `<section class="sozgrup"><h3>${esc(g)}</h3>${rows.map(t=>`<div class="sozrow"><b>${esc(t[0])}</b><p>${esc(t[2])}</p></div>`).join("")}</section>` : "";
     }).join("");
     document.getElementById("sozliste").innerHTML = html || `<p class="note">“${esc(q)}” için sonuç yok.</p>`;
@@ -1504,8 +1603,8 @@ function quiz(){
   <article class="qcard">
     <div class="qmeta"><span class="chip">Soru ${S.i+1} / ${n}</span><span class="chip">${KAT[q[0]]}${S.id===7?` · ${LVNAME(q)}`:""}</span></div>
     ${fig(q[6])}
-    <p class="qtext">${gloss(esc(q[2]),isM(q))}</p>
-    <div class="opts">${q[3].map((o,j)=>`<button class="opt${S.ans[S.i]===j?" sel":""}" data-j="${j}"><span class="l">${"ABCD"[j]}</span><span>${gloss(esc(o),isM(q))}</span></button>`).join("")}</div>
+    <p class="qtext">${gloss(esc(q[2]),glCat(q))}</p>
+    <div class="opts">${q[3].map((o,j)=>`<button class="opt${S.ans[S.i]===j?" sel":""}" data-j="${j}"><span class="l">${"ABCD"[j]}</span><span>${gloss(esc(o),glCat(q))}</span></button>`).join("")}</div>
   </article>
   ${S.confirm?`<div class="confirm" id="cf"><p><b>${n-done} soru boş.</b> Yine de bitirmek istiyor musun?</p><div class="row"><button class="btn warn" id="yes">Evet, bitir</button><button class="btn" id="no">Devam et</button></div></div>`:""}
   <details class="qlist"${open?" open":""}><summary>Soru listesi · ${done}/${n} cevaplandı</summary>
@@ -1582,8 +1681,8 @@ function review(ids,pos,title){
   <article class="qcard">
     <div class="qmeta"><span class="chip">${k+1}. soru · ${LVNAME(q)}</span><span class="chip">${KAT[q[0]]}</span></div>
     ${fig(q[6])}
-    <p class="qtext">${gloss(esc(q[2]),isM(q))}</p>
-    <div class="opts">${q[3].map((o,j)=>`<div class="opt${j===q[4]?" right":""}${j===a&&j!==q[4]?" wrong":""}"><span class="l">${"ABCD"[j]}</span><span>${gloss(esc(o),isM(q))}${j===q[4]?" <b>✓ doğru cevap</b>":j===a?" <b>✗ senin cevabın</b>":""}</span></div>`).join("")}</div>
+    <p class="qtext">${gloss(esc(q[2]),glCat(q))}</p>
+    <div class="opts">${q[3].map((o,j)=>`<div class="opt${j===q[4]?" right":""}${j===a&&j!==q[4]?" wrong":""}"><span class="l">${"ABCD"[j]}</span><span>${gloss(esc(o),glCat(q))}${j===q[4]?" <b>✓ doğru cevap</b>":j===a?" <b>✗ senin cevabın</b>":""}</span></div>`).join("")}</div>
     <div class="feedback ${st==="ok"?"ok":"bad"}">${head}<p><b>Doğrusu ${"ABCD"[q[4]]}) ${esc(q[3][q[4]])}.</b></p><p><b>Neden?</b> ${esc(q[5])}</p></div>
   </article>`;
   bottom(`<button class="btn" id="rp" ${pos===0?"disabled":""}>‹ Önceki</button>${pos<ids.length-1?`<button class="btn primary" id="rn">Sonraki ›</button>`:`<button class="btn primary" id="rd">Sonuca dön</button>`}`);

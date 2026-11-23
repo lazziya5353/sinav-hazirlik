@@ -1,5 +1,5 @@
 // Ehliyet Sınav Kampı - internetsiz çalışma
-const CACHE = "ehliyet-70459769";
+const CACHE = "ehliyet-96196824";
 const FILES = ["/", "/index.html", "/manifest.webmanifest", "/icon.svg", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png"];
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
